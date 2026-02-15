@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Popup + Flip Book</title>
+
+<style>
+/* ===== BODY ===== */
+body {
+    margin: 0;
+    height: 100vh;
+    background: powderblue; /* powder blue background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: sans-serif;
+}
+
+/* ===== POPUP WINDOW ===== */
+.window {
+    width: 230px;
+    background: #f0f0f0;
+    border: 1px solid #808080;
+    box-shadow: 3px 3px 0 #404040;
+    position: relative;
+    z-index: 10; /* above flipbook */
+}
+
+.titlebar {
+    background: linear-gradient(#0a246a, #3a6ea5);
+    color: white;
+    font-size: 12px;
+    padding: 4px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close {
+    background: #c05050;
+    width: 14px;
+    height: 14px;
+    text-align: center;
+    line-height: 14px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.content {
+    padding: 14px;
+    font-size: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1f6fd2;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.actions {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+button {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 3px 16px;
+    border: 1px solid #808080;
+    background: #e0e0e0;
+    box-shadow: inset -1px -1px 0 #404040;
+    cursor: pointer;
+}
+
+button:active {
+    box-shadow: inset 1px 1px 0 #404040;
+}
+
+.escape {
+    position: absolute;
+}
+
+/* ===== FLIPBOOK ===== */
+#flipbook-container {
+    display: none; /* hidden initially */
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background: powderblue;
+    font-family: sans-serif;
+    z-index: 1; /* behind popup */
+}
+
+.book{
+    position: relative;
+    width: 340px;
+    aspect-ratio: 400/599;
+    perspective: 1500px;
+    cursor: pointer;
+    transform: translateX(50%);
+}
+
+.paper{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform-origin: left;
+    transition: transform .6s ease;
+}
+
+.front, .back{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    background: white;
+}
+
+.front { border-left: 3px solid powderblue; }
+.back { transform: rotateY(180deg); }
+
+.front-content, .back-content{
+    width: 100%;
+    height: 100%;
+}
+
+.front-content img,
+.back-content img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.paper.flipped{
+    transform: rotateY(-180deg);
+}
+
+/* FLIPBOOK POPUP IMAGES */
+#popupImage{
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    max-width: 800px;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border: 5px solid white;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,.6);
+    z-index: 1000;
+    cursor: pointer;
+    transition: all .3s ease;
+}
+
+#popupImage.portrait{
+    width: 35vw;
+    max-width: 350px;
+    aspect-ratio: 9/16;
+}
+
+#overlay{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    z-index: 999;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== POPUP FIRST ===== -->
+<div class="window" id="popup">
+    <div class="titlebar">
+        <span>&lt;3</span>
+        <div class="close" onclick="closePopup()">X</div>
+    </div>
+
+    <div class="content">
+        <div class="icon">i</div>
+        <div id="text">Kinsay mas cute?</div>
+    </div>
+
+    <div class="actions" id="actions">
+        <button id="harris">Harris</button>
+        <button id="renae">Renae</button>
+    </div>
+</div>
+
+<!-- ===== FLIPBOOK CONTAINER ===== -->
+<div id="flipbook-container">
+    <div class="book" id="book">
+        <!-- Pages up to 11 -->
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front1.png"></div></div><div class="back"><div class="back-content"><img src="images-back1.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front2.png"></div></div><div class="back"><div class="back-content"><img src="images-back2.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front3.png"></div></div><div class="back"><div class="back-content"><img src="images-back3.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front4.png"></div></div><div class="back"><div class="back-content"><img src="images-back4.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front5.png"></div></div><div class="back"><div class="back-content"><img src="images-back5.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front6.png"></div></div><div class="back"><div class="back-content"><img src="images-back6.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front7.png"></div></div><div class="back"><div class="back-content"><img src="images-back7.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front8.png"></div></div><div class="back"><div class="back-content"><img src="images-back8.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front9.png"></div></div><div class="back"><div class="back-content"><img src="images-back9.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front10.png"></div></div><div class="back"><div class="back-content"><img src="images-back10.png"></div></div></div>
+        <div class="paper"><div class="front"><div class="front-content"><img src="images-front11.png"></div></div><div class="back"><div class="back-content"><img src="images-back11.png"></div></div></div>
+    </div>
+
+    <img id="popupImage">
+    <div id="overlay"></div>
+</div>
+
+<script>
+// ===== POPUP LOGIC =====
+const popup = document.getElementById("popup");
+const renaeBtn = document.getElementById("renae");
+const actions = document.getElementById("actions");
+const text = document.getElementById("text");
+const flipbookContainer = document.getElementById("flipbook-container");
+
+// Renae escapes
+function moveRenae() {
+    renaeBtn.classList.add("escape");
+    const maxX = popup.clientWidth - renaeBtn.offsetWidth;
+    const maxY = popup.clientHeight - renaeBtn.offsetHeight;
+    renaeBtn.style.left = Math.random() * maxX + "px";
+    renaeBtn.style.top  = Math.random() * maxY + "px";
+}
+renaeBtn.addEventListener("mouseenter", moveRenae);
+renaeBtn.addEventListener("click", moveRenae);
+
+// Harris button
+document.getElementById("harris").onclick = () => {
+    text.innerText = "tsk tsk tsk sakto jud ka bunny";
+    actions.innerHTML = `<button id="proceedBtn">Proceed</button>`;
+
+    document.getElementById("proceedBtn").onclick = () => {
+        popup.style.display = "none";          
+        flipbookContainer.style.display = "flex"; 
+        initFlipbook();                         
+    };
+};
+
+function closePopup() {
+    popup.style.display = "none";
+    flipbookContainer.style.display = "flex";
+}
+
+// ===== FLIPBOOK LOGIC =====
+function initFlipbook(){
+    const book = document.getElementById("book");
+    const papers = document.querySelectorAll(".paper");
+    const popupImage = document.getElementById("popupImage");
+    const overlay = document.getElementById("overlay");
+
+    let currentLocation = 0;
+    const numOfPapers = papers.length;
+
+    let popupActive = false;
+    let popupIndex = 0;
+
+    const popupImages = [
+        "popup-image.png",
+        "popup-image1.png",
+        "popup-image2.png"
+    ];
+
+    papers.forEach((paper,index)=>{
+        paper.style.zIndex = numOfPapers - index;
+    });
+
+    book.addEventListener("click",(e)=>{
+        const rect = book.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        if(clickX > rect.width/2){ nextPage(); } 
+        else { prevPage(); }
+    });
+
+    function nextPage(){
+        if(currentLocation === 4 && !popupActive){
+            popupActive = true;
+            popupIndex = 0;
+            showPopup();
+            return;
+        }
+        if(currentLocation < numOfPapers){
+            papers[currentLocation].classList.add("flipped");
+            papers[currentLocation].style.zIndex = currentLocation;
+            currentLocation++;
+        }
+    }
+
+    function prevPage(){
+        if(popupActive) return;
+        if(currentLocation > 0){
+            currentLocation--;
+            papers[currentLocation].classList.remove("flipped");
+            papers[currentLocation].style.zIndex = numOfPapers - currentLocation;
+        }
+    }
+
+    function showPopup(){
+        popupImage.src = popupImages[popupIndex];
+        popupImage.style.display = "block";
+        overlay.style.display = "block";
+    }
+
+    function closeFlipPopup(){
+        popupIndex++;
+        if(popupIndex < popupImages.length){
+            showPopup();
+        } else {
+            popupActive = false;
+            popupImage.style.display = "none";
+            overlay.style.display = "none";
+            papers[currentLocation].classList.add("flipped");
+            papers[currentLocation].style.zIndex = currentLocation;
+            currentLocation++;
+        }
+    }
+
+    overlay.addEventListener("click", closeFlipPopup);
+    popupImage.addEventListener("click", closeFlipPopup);
+}
+</script>
+
+</body>
+</html>
